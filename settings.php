@@ -86,8 +86,19 @@ if (isset($_GET['action'])) {
             echo $result['response'];
             exit;
             
+        case 'get_available_nests':
+            $result = makeApplicationApiRequest("/api/application/nests");
+            echo $result['response'];
+            exit;
+            
         case 'get_available_eggs':
-            $nestId = $_GET['nest_id'] ?? 1; // Default to Minecraft (nest 1)
+            $nestId = $_GET['nest_id'] ?? null;
+            
+            if (!$nestId) {
+                echo json_encode(['error' => 'Nest ID is required']);
+                exit;
+            }
+            
             $result = makeApplicationApiRequest("/api/application/nests/{$nestId}/eggs");
             echo $result['response'];
             exit;

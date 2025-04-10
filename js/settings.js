@@ -5,6 +5,8 @@ $(document).ready(function() {
     let selectedEggId = null;
     let eggDetails = {}; // Cache for egg details (environment variables, docker image, etc.)
     let nestName = "Unknown"; // Default nest name
+    let availableNests = []; // Store available nests
+    let selectedNestId = null; // Track selected nest
     
     // Load server details
     loadServerDetails();
@@ -22,18 +24,52 @@ $(document).ready(function() {
                 
                 serverDetails = data;
                 selectedEggId = serverDetails.attributes.egg;
+                selectedNestId = serverDetails.attributes.nest;
                 
-                // Load nest details to get the name
-                loadNestDetails(serverDetails.attributes.nest);
+                // Load available nests
+                loadAvailableNests();
                 
                 // Get details for current egg
-                loadEggDetails(selectedEggId, serverDetails.attributes.nest);
-                
-                // Fetch available eggs for this nest
-                loadAvailableEggs(serverDetails.attributes.nest);
+                loadEggDetails(selectedEggId, selectedNestId);
             },
             error: function() {
                 showError('Failed to load server details. Please check your permissions.');
+            }
+        });
+    }
+    
+    function loadAvailableNests() {
+        $.ajax({
+            url: `settings.php?id=${serverId}&action=get_available_nests`,
+            type: 'GET',
+            dataType: 'json',
+            success: function(data) {
+                if (data.error) {
+                    showError(data.error);
+                    return;
+                }
+                
+                availableNests = data.data || [];
+                
+                // Load nest details for current nest
+                if (selectedNestId) {
+                    loadNestDetails(selectedNestId);
+                    
+                    // Fetch available eggs for current nest
+                    loadAvailableEggs(selectedNestId);
+                }
+                
+                renderSettingsForm();
+            },
+            error: function() {
+                showError('Failed to load available nests. Please check your permissions.');
+                
+                // If we can't load nests, try to load eggs for the current nest at least
+                if (selectedNestId) {
+                    loadNestDetails(selectedNestId);
+                    loadAvailableEggs(selectedNestId);
+                    renderSettingsForm();
+                }
             }
         });
     }
@@ -49,7 +85,7 @@ $(document).ready(function() {
                 if (data && data.attributes && data.attributes.name) {
                     nestName = data.attributes.name;
                     // Update the display if form is already rendered
-                    $("#nest-name-input").val(nestName);
+                    updateNestDisplay();
                 }
             },
             error: function() {
@@ -58,7 +94,18 @@ $(document).ready(function() {
         });
     }
     
+    function updateNestDisplay() {
+        // Update nest selector if it exists
+        if (availableNests.length > 0) {
+            $("#nest-selector").val(selectedNestId);
+        } else {
+            $("#nest-name-input").val(nestName);
+        }
+    }
+    
     function loadAvailableEggs(nestId) {
+        if (!nestId) return;
+        
         $.ajax({
             url: `settings.php?id=${serverId}&action=get_available_eggs&nest_id=${nestId}`,
             type: 'GET',
@@ -70,12 +117,40 @@ $(document).ready(function() {
                 }
                 
                 availableEggs = data.data || [];
-                renderSettingsForm();
+                updateEggDisplay();
             },
             error: function() {
                 showError('Failed to load available eggs. Please check your permissions.');
             }
         });
+    }
+    
+    function updateEggDisplay() {
+        // Update the egg selection UI
+        const eggContainer = $('#egg-selection-container');
+        if (eggContainer.length) {
+            eggContainer.html(`
+                <div class="egg-selection-grid">
+                    <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-2 row-eq-height">
+                        ${renderEggCards()}
+                    </div>
+                </div>
+            `);
+            
+            // Reattach click events
+            $('.egg-card').on('click', function() {
+                $('.egg-card').removeClass('selected');
+                $(this).addClass('selected');
+                
+                // Update selected egg
+                selectedEggId = $(this).data('egg-id');
+                
+                // Preload details if not already cached
+                if (!eggDetails[selectedEggId]) {
+                    loadEggDetails(selectedEggId, selectedNestId);
+                }
+            });
+        }
     }
     
     function loadEggDetails(eggId, nestId) {
@@ -104,7 +179,7 @@ $(document).ready(function() {
     }
     
     function renderSettingsForm() {
-        if (!serverDetails || !availableEggs) {
+        if (!serverDetails) {
             return;
         }
         
@@ -118,18 +193,20 @@ $(document).ready(function() {
                 
                 <div class="section-card card mb-4">
                     <div class="card-body">
-                        <!-- Server Type (Nest) - Read Only -->
+                        <!-- Server Type (Nest) Selection -->
                         <div class="mb-4">
                             <label class="form-label fw-bold">Type</label>
-                            <input type="text" id="nest-name-input" class="form-control" value="${escapeHtml(nestName)}" readonly>
+                            ${renderNestSelector()}
                         </div>
                         
                         <!-- Server Platform (Egg) Selection -->
                         <div class="mb-4">
                             <label class="form-label fw-bold">Platform</label>
-                            <div class="egg-selection-grid">
-                                <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-2 row-eq-height">
-                                    ${renderEggCards()}
+                            <div id="egg-selection-container">
+                                <div class="egg-selection-grid">
+                                    <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-2 row-eq-height">
+                                        ${renderEggCards()}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -201,8 +278,22 @@ $(document).ready(function() {
             
             // Preload details if not already cached
             if (!eggDetails[selectedEggId]) {
-                loadEggDetails(selectedEggId, serverDetails.attributes.nest);
+                loadEggDetails(selectedEggId, selectedNestId);
             }
+        });
+        
+        // Bind event for nest selection
+        $('#nest-selector').on('change', function() {
+            selectedNestId = $(this).val();
+            
+            // Reset selected egg when nest changes
+            selectedEggId = null;
+            
+            // Load nest details
+            loadNestDetails(selectedNestId);
+            
+            // Load eggs for the selected nest
+            loadAvailableEggs(selectedNestId);
         });
         
         $('#settings-form').on('submit', function(e) {
@@ -224,6 +315,21 @@ $(document).ready(function() {
         });
     }
     
+    function renderNestSelector() {
+        // If no nests are available, just display current nest name in readonly input
+        if (!availableNests || availableNests.length === 0) {
+            return `<input type="text" id="nest-name-input" class="form-control" value="${escapeHtml(nestName)}" readonly>`;
+        }
+        
+        // Otherwise, create a dropdown of available nests
+        let options = availableNests.map(nest => {
+            const isSelected = nest.attributes.id === selectedNestId;
+            return `<option value="${nest.attributes.id}" ${isSelected ? 'selected' : ''}>${escapeHtml(nest.attributes.name)}</option>`;
+        }).join('');
+        
+        return `<select id="nest-selector" class="form-select">${options}</select>`;
+    }
+    
     function renderEggCards() {
         if (!availableEggs.length) {
             return '<div class="col-12">No platforms available for this server type.</div>';
@@ -233,7 +339,7 @@ $(document).ready(function() {
             const isSelected = egg.attributes.id === selectedEggId;
             // Also fetch details for each egg so they're ready when selected
             if (!eggDetails[egg.attributes.id]) {
-                loadEggDetails(egg.attributes.id, serverDetails.attributes.nest);
+                loadEggDetails(egg.attributes.id, selectedNestId);
             }
             return `
                 <div class="egg-grid-item col">
@@ -389,7 +495,7 @@ $(document).ready(function() {
         } else {
             // Load egg details first, then proceed
             $.ajax({
-                url: `settings.php?id=${serverId}&action=get_egg_details&egg_id=${selectedEggId}&nest_id=${serverDetails.attributes.nest}`,
+                url: `settings.php?id=${serverId}&action=get_egg_details&egg_id=${selectedEggId}&nest_id=${selectedNestId}`,
                 type: 'GET',
                 dataType: 'json',
                 success: function(data) {
