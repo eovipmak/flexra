@@ -54,7 +54,7 @@ function renderStartupForm(serverInfo) {
                             </h4>
                         </div>
                         <div class="card-body">
-                            <p class="text-muted">Configure the command used to start your Minecraft server.</p>
+                            <p class="text-muted">Configure the command used to start your server.</p>
                             <div class="mb-3">
                                 <textarea class="form-control auto-resize" id="startup-command" style="overflow: hidden;">${rawStartupCommand}</textarea>
                             </div>

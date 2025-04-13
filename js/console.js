@@ -173,7 +173,7 @@ function sendCommand() {
 }
 
 function searchLogFiles() {
-    // Check logs in common Minecraft server locations
+    // Check logs in common server locations
     ['logs', ''].forEach((dir, index) => {
         setTimeout(() => {
             if (!state.logsFound) checkLogsInDirectory(dir);

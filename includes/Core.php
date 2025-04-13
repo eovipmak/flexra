@@ -1,6 +1,6 @@
 <?php
 /**
- * Core functionality for the Minecraft Server Management application
+ * Core functionality for the Flexa Server Management application
  * 
  * This file consolidates common functions and utilities used throughout the application
  */
@@ -118,7 +118,7 @@ function pageHeader($title, $cssFiles = [], $preloadResources = []) {
             <div class="container">
                 <a class="navbar-brand" href="index.php">
                     <i class="bi bi-cube-fill me-2"></i>
-                    <span>Minecraft Server Management</span>
+                    <span>Flexa Server Management</span>
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>

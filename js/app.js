@@ -1,7 +1,7 @@
 /**
  * Main JavaScript file - Consolidated from multiple JS files
  * 
- * This file contains all client-side functionality for the Minecraft Server Management application
+ * This file contains all client-side functionality for the Flexa Server Management application
  * - Toast notifications
  * - Confirmation dialogs
  * - UI enhancements (lazy loading, animations)
