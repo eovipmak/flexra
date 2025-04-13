@@ -10,7 +10,6 @@ A comprehensive web-based interface for managing game servers through the Pterod
 - **Mod Management**: Search, install, and remove mods from Modrinth (for supported server types)
 - **Server Settings**: Configure server properties and settings
 - **Startup Parameters**: Customize startup arguments and configuration
-- **File Management**: Browse, edit, and manage server files
 - **Adaptive Interface**: UI adapts based on server type, showing only relevant features
 
 ## Requirements
@@ -114,38 +113,6 @@ A comprehensive web-based interface for managing game servers through the Pterod
    - Go to the Startup tab
    - Customize startup arguments and memory allocation
    - Configure environment variables and other startup parameters
-
-## API Usage
-
-The application provides several API endpoints for client-side JavaScript to interact with:
-
-### Server Management
-
-- `console.php?action=resources&id={serverId}`: Get server resources
-- `console.php?action=files&id={serverId}&directory={directory}`: Get files list
-- `console.php?action=file_contents&id={serverId}&file={filePath}`: Get file contents
-- `console.php?action=send_command&id={serverId}`: Send a command to the server
-
-### Plugin Management
-
-- `plugins.php?action=search&id={serverId}&query={query}`: Search for plugins
-- `plugins.php?action=versions&id={serverId}&project_id={projectId}`: Get plugin versions
-- `plugins.php?action=server_plugins&id={serverId}`: Get installed plugins
-- `plugins.php?action=install&id={serverId}`: Install a plugin (POST request)
-- `plugins.php?action=delete&id={serverId}`: Delete a plugin (POST request)
-
-### Mod Management
-
-- `mods.php?action=search&id={serverId}&query={query}`: Search for mods
-- `mods.php?action=versions&id={serverId}&project_id={projectId}`: Get mod versions
-- `mods.php?action=server_mods&id={serverId}`: Get installed mods
-- `mods.php?action=install&id={serverId}`: Install a mod (POST request)
-- `mods.php?action=delete&id={serverId}`: Delete a mod (POST request)
-
-### Settings Management
-
-- `settings.php?action=get_file&id={serverId}&file={filePath}`: Get settings file
-- `settings.php?action=save_file&id={serverId}`: Save settings file (POST request)
 
 ## Troubleshooting
 
