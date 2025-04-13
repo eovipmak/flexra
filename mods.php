@@ -1,5 +1,6 @@
 <?php
 require_once 'includes/bootstrap.php';
+require_once 'includes/EggFeatureManager.php';
 
 // Get server ID from request
 $serverId = $_GET['id'] ?? '';
@@ -10,6 +11,16 @@ if (empty($serverId)) {
 // Initialize managers
 $serverManager = new ServerManager();
 $contentManager = new ContentManager();
+
+// Check if this server's egg supports mods
+$featureManager = EggFeatureManager::getInstance();
+$eggId = $featureManager->getEggIdFromServerId($serverId);
+
+// If egg ID is known and doesn't support mods, redirect to console
+if ($eggId !== null && !$featureManager->hasModsTab($eggId)) {
+    header("Location: console.php?id=$serverId");
+    exit;
+}
 
 // Update the mod installation handler
 if (isset($_POST['install_mod']) && !empty($_POST['project_id']) && !empty($_POST['version_id'])) {
@@ -87,13 +98,31 @@ echo pageHeader("Mods - " . htmlspecialchars($server['attributes']['name'] ?? 'S
         <!-- Tab navigation -->
         <ul class="nav nav-tabs mb-4 animated-card" style="opacity: 1;">
             <?php
+            // Include the EggFeatureManager
+            require_once 'includes/EggFeatureManager.php';
+            $featureManager = EggFeatureManager::getInstance();
+            
+            // Get the egg ID for this server
+            $eggId = $featureManager->getEggIdFromServerId($serverId);
+            
+            // Define base tabs that are always shown
             $tabs = [
-                'console' => '<i class="bi bi-terminal me-1"></i> Console', 
-                'plugins' => '<i class="bi bi-puzzle me-1"></i> Plugins', 
-                'mods' => '<i class="bi bi-box me-1"></i> Mods', 
+                'console' => '<i class="bi bi-terminal me-1"></i> Console',
                 'startup' => '<i class="bi bi-gear me-1"></i> Startup', 
                 'settings' => '<i class="bi bi-sliders me-1"></i> Settings'
             ];
+            
+            // Add plugins tab if this egg should have it
+            if ($eggId === null || $featureManager->hasPluginsTab($eggId)) {
+                $tabs['plugins'] = '<i class="bi bi-puzzle me-1"></i> Plugins';
+            }
+            
+            // Add mods tab if this egg should have it
+            if ($eggId === null || $featureManager->hasModsTab($eggId)) {
+                $tabs['mods'] = '<i class="bi bi-box me-1"></i> Mods';
+            }
+            
+            // Display the tabs
             foreach ($tabs as $tab => $label) {
                 $activeClass = $tab === 'mods' ? 'active' : '';
                 echo "<li class=\"nav-item\"><a class=\"nav-link $activeClass\" href=\"$tab.php?id=$serverId\">$label</a></li>";

@@ -312,7 +312,31 @@ echo pageHeader("Startup - " . htmlspecialchars($server['attributes']['name'] ??
         <!-- Tab navigation -->
         <ul class="nav nav-tabs mb-4">
             <?php
-            $tabs = ['console' => 'Console', 'plugins' => 'Plugins', 'mods' => 'Mods', 'startup' => 'Startup', 'settings' => 'Settings'];
+            // Include the EggFeatureManager
+            require_once 'includes/EggFeatureManager.php';
+            $featureManager = EggFeatureManager::getInstance();
+            
+            // Get the egg ID for this server
+            $eggId = $featureManager->getEggIdFromServerId($serverId);
+            
+            // Define base tabs that are always shown
+            $tabs = [
+                'console' => 'Console',
+                'startup' => 'Startup', 
+                'settings' => 'Settings'
+            ];
+            
+            // Add plugins tab if this egg should have it
+            if ($eggId === null || $featureManager->hasPluginsTab($eggId)) {
+                $tabs['plugins'] = 'Plugins';
+            }
+            
+            // Add mods tab if this egg should have it
+            if ($eggId === null || $featureManager->hasModsTab($eggId)) {
+                $tabs['mods'] = 'Mods';
+            }
+            
+            // Display the tabs
             foreach ($tabs as $tab => $label) {
                 $activeClass = $tab === 'startup' ? 'active' : '';
                 echo "<li class=\"nav-item\"><a class=\"nav-link $activeClass\" href=\"$tab.php?id=$serverId\">$label</a></li>";
