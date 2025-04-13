@@ -1,16 +1,17 @@
-# Minecraft Server Management API
+# Flexra - Game Server Management Panel
 
-A comprehensive web-based interface for managing Minecraft servers through the Pterodactyl panel API. This application provides an easy-to-use dashboard for controlling your Minecraft servers, managing plugins and mods, accessing the console, and configuring server settings.
+A comprehensive web-based interface for managing game servers through the Pterodactyl panel API. This application provides an easy-to-use dashboard for controlling your game servers, managing plugins and mods, accessing the console, and configuring server settings.
 
 ## Features
 
-- **Server Management**: Start, stop, restart, and monitor your Minecraft servers
+- **Server Management**: Start, stop, restart, and monitor your game servers
 - **Console Access**: View server logs and send commands directly from your browser
-- **Plugin Management**: Search, install, and remove plugins from Modrinth
-- **Mod Management**: Search, install, and remove mods from Modrinth
+- **Plugin Management**: Search, install, and remove plugins from Modrinth (for supported server types)
+- **Mod Management**: Search, install, and remove mods from Modrinth (for supported server types)
 - **Server Settings**: Configure server properties and settings
-- **Startup Parameters**: Customize Java arguments and startup configuration
+- **Startup Parameters**: Customize startup arguments and configuration
 - **File Management**: Browse, edit, and manage server files
+- **Adaptive Interface**: UI adapts based on server type, showing only relevant features
 
 ## Requirements
 
@@ -23,8 +24,8 @@ A comprehensive web-based interface for managing Minecraft servers through the P
 
 1. **Clone the Repository**
    ```bash
-   git clone https://github.com/yourusername/minecraft-server-manager.git
-   cd minecraft-server-manager
+   git clone https://github.com/yourusername/flexra.git
+   cd flexra
    ```
 
 2. **Create Environment File**
@@ -39,10 +40,10 @@ A comprehensive web-based interface for managing Minecraft servers through the P
    Configure your web server to point to the project directory. Example for Apache:
    ```apache
    <VirtualHost *:80>
-       ServerName minecraft-manager.example.com
-       DocumentRoot /path/to/minecraft-server-manager
+       ServerName flexra.example.com
+       DocumentRoot /path/to/flexra
        
-       <Directory /path/to/minecraft-server-manager>
+       <Directory /path/to/flexra>
            AllowOverride All
            Require all granted
        </Directory>
@@ -79,7 +80,7 @@ A comprehensive web-based interface for managing Minecraft servers through the P
 ### Using the Dashboard
 
 1. **Server Overview**
-   - The main page displays all your Minecraft servers
+   - The main page displays all your game servers
    - Each server card shows status, resource usage, and quick actions
    - Click on a server to access detailed management options
 
@@ -89,14 +90,14 @@ A comprehensive web-based interface for managing Minecraft servers through the P
    - Send commands using the command input field
    - Use the power buttons to start, stop, or restart the server
 
-3. **Managing Plugins**
+3. **Managing Plugins** (for supported server types)
    - Go to the Plugins tab
    - View currently installed plugins
    - Search for new plugins from Modrinth
    - Install plugins by selecting a version compatible with your server
    - Remove plugins by clicking the delete button
 
-4. **Managing Mods**
+4. **Managing Mods** (for supported server types)
    - Go to the Mods tab
    - View currently installed mods
    - Search for new mods from Modrinth
@@ -105,13 +106,14 @@ A comprehensive web-based interface for managing Minecraft servers through the P
 
 5. **Server Settings**
    - Navigate to the Settings tab
-   - Modify server.properties and other configuration files
+   - Change server type and platform
+   - Configure server-specific settings
    - Save changes and restart the server to apply them
 
 6. **Startup Configuration**
    - Go to the Startup tab
-   - Customize Java arguments and memory allocation
-   - Configure server jar file and other startup parameters
+   - Customize startup arguments and memory allocation
+   - Configure environment variables and other startup parameters
 
 ## API Usage
 
@@ -162,6 +164,12 @@ The application provides several API endpoints for client-side JavaScript to int
    - Verify the server has enough disk space
    - Ensure the plugins or mods directory exists on the server
    - Check if the selected version is compatible with your server type
+   - Confirm your server type supports plugins/mods (check Settings tab)
+
+4. **Missing Tabs**
+   - Some tabs (like Plugins or Mods) only appear for compatible server types
+   - Check your server's egg type in the Settings tab
+   - Update the EggFeatureManager.php file to add support for additional eggs
 
 ### Debugging
 
@@ -184,6 +192,7 @@ api/
 │   ├── Config.php        # Configuration management
 │   ├── ContentManager.php # Plugin/mod management
 │   ├── Core.php          # Core functionality
+│   ├── EggFeatureManager.php # Server type feature management
 │   ├── ModrinthClient.php # Modrinth API client
 │   ├── Response.php      # API response handling
 │   └── ServerManager.php # Server management
@@ -227,3 +236,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - [Modrinth](https://modrinth.com/) for the plugin and mod repository
 - [Bootstrap](https://getbootstrap.com/) for the UI framework
 - [jQuery](https://jquery.com/) for the JavaScript library
+- All game server communities for their continued support and feedback
