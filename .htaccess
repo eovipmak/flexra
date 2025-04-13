@@ -1,0 +1,43 @@
+# Disable directory listing
+Options -Indexes
+
+# Protect .env file
+<Files .env>
+    Order Allow,Deny
+    Deny from all
+</Files>
+
+# Protect includes directory
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^includes/ - [F,L]
+</IfModule>
+
+# Set default character set
+AddDefaultCharset UTF-8
+
+# Enable CORS
+<IfModule mod_headers.c>
+    Header set Access-Control-Allow-Origin "*"
+    Header set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+    Header set Access-Control-Allow-Headers "Content-Type, Authorization"
+</IfModule>
+
+# Security headers
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-XSS-Protection "1; mode=block"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# PHP settings
+<IfModule mod_php7.c>
+    php_flag display_errors Off
+    php_flag log_errors On
+    php_value error_log logs/error.log
+    php_value max_execution_time 300
+    php_value memory_limit 256M
+    php_value post_max_size 100M
+    php_value upload_max_filesize 50M
+</IfModule>
