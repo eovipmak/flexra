@@ -42,7 +42,8 @@ class EggFeatureManager {
             2,
             15,
             18,
-            22
+            22,
+	    24
             // Add more egg IDs as needed
         ];
         
@@ -51,7 +52,8 @@ class EggFeatureManager {
         $this->pluginsEggs = [
             4,
             16,
-            17
+            17,
+	    24
             // Add more egg IDs as needed
         ];
     }
