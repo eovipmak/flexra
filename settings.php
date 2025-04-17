@@ -8,6 +8,30 @@ if (!$serverId) {
     die('Server ID is required');
 }
 
+// Caching setup
+$cacheDir = __DIR__ . '/cache';
+$cacheTTL = 300; // seconds
+if (!file_exists($cacheDir)) {
+    mkdir($cacheDir, 0755, true);
+}
+function getCache($key) {
+    global $cacheDir, $cacheTTL;
+    $file = $cacheDir . "/{$key}.cache";
+    if (file_exists($file)) {
+        $data = json_decode(file_get_contents($file), true);
+        if (isset($data['timestamp'], $data['content']) && $data['timestamp'] >= time() - $cacheTTL) {
+            return $data['content'];
+        }
+    }
+    return false;
+}
+function setCache($key, $content) {
+    global $cacheDir;
+    $file = $cacheDir . "/{$key}.cache";
+    $data = ['timestamp' => time(), 'content' => $content];
+    file_put_contents($file, json_encode($data));
+}
+
 // Application API functions needed for server settings
 function makeApplicationApiRequest($endpoint, $method = 'GET', $data = null) {
     global $PTERO_PANEL_URL, $PTERO_APPLICATION_API_KEY;
@@ -77,17 +101,28 @@ if (isset($_GET['action'])) {
     
     switch ($_GET['action']) {
         case 'get_server_details':
+            $cacheKey = "server_details_{$serverId}";
+            if ($cached = getCache($cacheKey)) {
+                echo $cached;
+                exit;
+            }
             if (!$appServerId) {
                 echo json_encode(['error' => 'Server not found']);
                 exit;
             }
-            
             $result = makeApplicationApiRequest("/api/application/servers/{$appServerId}");
+            setCache($cacheKey, $result['response']);
             echo $result['response'];
             exit;
             
         case 'get_available_nests':
+            $cacheKey = 'available_nests';
+            if ($cached = getCache($cacheKey)) {
+                echo $cached;
+                exit;
+            }
             $result = makeApplicationApiRequest("/api/application/nests");
+            setCache($cacheKey, $result['response']);
             echo $result['response'];
             exit;
             
@@ -99,7 +134,16 @@ if (isset($_GET['action'])) {
                 exit;
             }
             
+            $cacheKey = "available_eggs_{$nestId}";
+            if ($cached = getCache($cacheKey)) {
+                header('X-Cache: HIT');
+                echo $cached;
+                exit;
+            }
+            
             $result = makeApplicationApiRequest("/api/application/nests/{$nestId}/eggs");
+            setCache($cacheKey, $result['response']);
+            header('X-Cache: MISS');
             echo $result['response'];
             exit;
             
@@ -109,6 +153,12 @@ if (isset($_GET['action'])) {
             
             if (!$eggId) {
                 echo json_encode(['error' => 'Egg ID is required']);
+                exit;
+            }
+            
+            $cacheKey = "egg_details_{$nestId}_{$eggId}";
+            if ($cached = getCache($cacheKey)) {
+                echo $cached;
                 exit;
             }
             
@@ -129,6 +179,7 @@ if (isset($_GET['action'])) {
                 }
             }
             
+            setCache($cacheKey, $result['response']);
             echo $result['response'];
             exit;
             
@@ -140,8 +191,15 @@ if (isset($_GET['action'])) {
                 exit;
             }
             
+            $cacheKey = "nest_details_{$nestId}";
+            if ($cached = getCache($cacheKey)) {
+                echo $cached;
+                exit;
+            }
+            
             // Get nest information
             $result = makeApplicationApiRequest("/api/application/nests/{$nestId}");
+            setCache($cacheKey, $result['response']);
             echo $result['response'];
             exit;
             
